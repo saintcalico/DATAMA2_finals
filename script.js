@@ -28,23 +28,33 @@ window.onload = function() {
 function addToCart(event) {
     event.preventDefault();
     const button = event.currentTarget;
+    const id = button.getAttribute('data-id');
     const product = button.getAttribute('data-product');
     const price = button.getAttribute('data-price');
     const image = button.getAttribute('data-image');
 
+    if (!id) {
+        console.error('No product ID found');
+        return;
+    }
+
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
-    const existingProduct = cart.find(item => item.product === product);
+    const existingProduct = cart.find(item => item.id === id);
+    
     if (existingProduct) {
         existingProduct.quantity += 1;
     } else {
         cart.push({
+            id,
             product,
             price: parseFloat(price),
             image,
             quantity: 1
         });
     }
+    
     localStorage.setItem('cart', JSON.stringify(cart));
+    console.log('Added to cart:', { id, product, price }); // Debug line
     alert(`${product} added to cart!`);
 }
 
@@ -65,7 +75,9 @@ function loadCartItems() {
                 <td>${item.product}</td>
                 <td>₱${item.price.toFixed(2)}</td>
                 <td>
-                    <input type="number" min="1" value="${item.quantity}" onchange="updateQuantity(${index}, this.value)">
+                    <input type="number" min="1" value="${item.quantity}" 
+                        onchange="updateQuantity(${index}, this.value)"
+                        data-id="${item.id}"> <!-- Add this line -->
                 </td>
                 <td>₱${subtotal.toFixed(2)}</td>
             </tr>
