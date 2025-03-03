@@ -158,12 +158,12 @@ try {
     const cart = JSON.parse(storedCart);
     console.log('Cart contents:', cart); // Debug line
 
-    // Validate cart items have valid IDs
-    const invalidItems = cart.filter(item => !item.id);
-    if (invalidItems.length > 0) {
-        console.error('Invalid items:', invalidItems);
-        throw new Error('Some items in your cart are missing product IDs');
-    }
+// With this validation section
+const invalidItems = cart.filter(item => !item.product);
+if (invalidItems.length > 0) {
+    console.error('Invalid items:', invalidItems);
+    throw new Error('Some items in your cart are missing product names');
+}
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 100;
 
@@ -190,22 +190,22 @@ try {
 
     if (orderError) throw orderError;
 
-    // Create order items with validated product IDs
-    const orderItems = cart.map(item => {
-        console.log('Processing item:', item); // Debug line
-        if (!item.id) {
-            throw new Error(`Missing product ID for item: ${item.product}`);
-        }
-        return {
-            order_id: order.id,
-            product_id: item.id.toString(),
-            quantity: Math.max(1, parseInt(item.quantity) || 1),
-            price: Number(parseFloat(item.price || 0).toFixed(2)),
-            subtotal: Number((parseFloat(item.price || 0) * (parseInt(item.quantity) || 1)).toFixed(2))
-        };
-    });
+// Replace the order items mapping section
+const orderItems = cart.map(item => {
+    console.log('Processing item:', item); // Debug line
+    if (!item.product) {
+        throw new Error(`Missing product name for item`);
+    }
+    return {
+        order_id: order.id,
+        product_name: item.product.toString(),
+        quantity: Math.max(1, parseInt(item.quantity) || 1),
+        price: Number(parseFloat(item.price || 0).toFixed(2)),
+        subtotal: Number((parseFloat(item.price || 0) * (parseInt(item.quantity) || 1)).toFixed(2))
+    };
+});
 
-    console.log('Order items to insert:', orderItems); // Debug line
+console.log('Order items to insert:', orderItems); // Debug line
 
     const { error: itemsError } = await supabaseClient
         .from('order_items')
